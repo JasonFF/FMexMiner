@@ -8,12 +8,8 @@ const fm = new FMex({
 })
 
 async function cleanOrders() {
-  let orders = await fm.getOrders().then(res => res.results)
-  orders.forEach(it => {
-      fm.cancelOrder(it.id).then(res => {
-        console.log(it.price)
-        console.log(res)
-      })
+  return fm.cancelAllOrders().then(res => {
+    console.log(res)
   })
 }
 

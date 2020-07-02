@@ -7,16 +7,18 @@
   "author": "JasonFF <925784658@qq.com>",
   "license": "MIT",
   "scripts": {
-    "guadan": "forever start --minUptime 10 --spinSleepTime 10 ./app.guadan.js",
-    "shishang-start": "forever start --minUptime 10 --spinSleepTime 10 ./app.shishang.js",
-    "shishang-cancel": "forever start --minUptime 5000 --spinSleepTime 5000 ./cancel.js",
-    "shishang": "npm run shishang-start & npm run shishang-cancel & npm run shishang-start",
-    "stop": "forever stopall",
-    "clear": "forever cleanlogs",
+    "start": "pm2 start ./index.js",
+    "monit": "pm2 monit",
+    "stop": "pm2 stop all",
+    "clear": "pm2 flush",
     "cancel": "node ./cancel.js"
   },
   "dependencies": {
-    "forever": "^1.0.0",
-    "node-fetch": "^2.6.0"
+    "lodash": "^4.17.15",
+    "moment": "^2.27.0",
+    "node-fetch": "^2.6.0",
+    "pm2": "^4.4.0",
+    "superagent": "^5.2.2",
+    "ws": "^7.3.0"
   }
 }
