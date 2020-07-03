@@ -1,4 +1,4 @@
-const FMex = require('./FMex')
+const FMex = require('./tools/FMex')
 
 function cancel(config) {
   const fm = new FMex({
