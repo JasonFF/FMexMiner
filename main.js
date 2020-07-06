@@ -1,17 +1,12 @@
 const moment = require('moment')
-const BitMEXClient = require('./tools/bitmexWs/index');
-const WebSocket = require('ws')
+
 const FMex = require('./tools/FMex.js')
 
 function main(config) {
-  let {
-    key,
-    secret
-  } = config
 
   const fm = new FMex({
-    key,
-    secret,
+    key: config.key,
+    secret: config.secret,
   })
 
   let $global = {
@@ -28,25 +23,8 @@ function main(config) {
     return new Promise(resolve => setTimeout(resolve, time))
   }
 
-  function bitmex() {
-    return new Promise(resolve => {
-      // See 'options' reference below
-      let client = new BitMEXClient({
-        testnet: false
-      });
-      // handle errors here. If no 'error' callback is attached. errors will crash the client.
-      client.on('error', e => {
-        console.log('from error')
-        console.log(e)
-        process.exit()
-      });
-      client.on('open', () => console.log('Connection opened.'));
-      client.on('close', () => {
-        console.log('from close')
-        console.log('Connection closed.')
-        process.exit()
-      });
-      client.on('initialize', () => console.log('Client initialized, data is flowing.'));
+  async function bitmex() {
+    await fm.getBMWs().then(client => {
       client.addStream('XBTUSD', 'orderBook10', function (data, symbol, tableName) {
         $global.$bm = {
           askPrice: data[0].asks[0][0],
@@ -54,39 +32,12 @@ function main(config) {
           bidPrice: data[0].asks[1][0],
           bidAmount: data[0].asks[1][1],
         }
-        resolve()
       })
     })
   }
 
-
-  function fmex() {
-    return new Promise(resolve => {
-      const fmws = new WebSocket('wss://api.fmextest.net/v2/ws');
-      fmws.on('open', function open() {
-        setInterval(() => {
-          fmws.send(JSON.stringify({
-            "cmd": "ping",
-            "args": [new Date().getTime()],
-            "id": 'ping'
-          }))
-        }, 10000)
-        setTimeout(() => {
-          fmws.send(JSON.stringify({
-            "cmd": "sub",
-            "args": ["ticker.BTCUSD_P"],
-            "id": "ticker"
-          }))
-        }, 1000)
-      });
-      fmws.on('close', function () {
-        console.log('close')
-        process.exit()
-      })
-      fmws.on('error', function (e) {
-        console.log('error', e)
-        process.exit()
-      })
+  async function fmex() {
+    await fm.getWs().then(fmws => {
       fmws.on('message', function (res) {
         let data = JSON.parse(res)
         if (data.type == 'ticker.btcusd_p') {
@@ -97,7 +48,6 @@ function main(config) {
             buySize: data.ticker[3],
             sellSize: data.ticker[5]
           }
-          resolve()
         }
       })
     })
@@ -194,13 +144,26 @@ function main(config) {
         console.log("cleanPosition")
         console.log(direction, res.id, res.price)
       })
+    } else {
+      let reqObj = {
+        symbol: "BTCUSD_P",
+        type: "LIMIT",
+        direction: direction == 'long' ? 'SHORT' : "LONG",
+        price: direction == 'long' ? (parseInt(entryPrice/1 - 1)) : (parseInt(entryPrice/1 + 1)),
+        quantity,
+        post_only: true,
+        affiliate_code: 'gjed1x'
+      }
+      fm.createOrder(reqObj).then(res => {
+        console.log("cleanPosition")
+        console.log(direction, res.id, res.price)
+      })
     }
   }
 
-
   async function start() {
     await Promise.all([fmex(), bitmex()])
-    for (let i = 0; i < 999999999999; i++) {
+    while (true) {
       await sleep(100)
       console.log(moment().format('YYYY-MM-DD HH:mm:ss:SSS'))
       cancelAllOrders()
@@ -210,5 +173,20 @@ function main(config) {
   }
   return start
 }
+
+// main({
+//   // 输入您的key
+//   key: '3839773b172b4a49a65911ef1062cef0', 
+//   // 输入您的secret
+//   secret: 'e0c87237d5c94a1d857119e2b492224a', 
+//   // 单次下单量
+//   quantity: 1111, 
+//   // bitmex 深度比，2 代表 2倍，例如卖单的量是买单的量的2倍，就触发了bitmex 卖单的逻辑。
+//   bitmex: 2, 
+//   // fmex 深度比，1.2 代表 1.2倍，例如卖单的量是买单的量的1.2倍，就触发了fmex 卖单的逻辑。当同时满足bitmex 和fmex 卖单逻辑的时候，才会下卖单。
+//   fmex: 1.2, 
+//   // 风控值，假如当前价格偏离开仓价格的 0.02 倍，那么就触发平仓，不管是盈利还是亏损，都会触发平仓。
+//   clean:  0.02
+// })()
 
 module.exports = main
