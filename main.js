@@ -103,7 +103,7 @@ function main(config) {
       price: price,
       quantity: $global.perQuantity,
       post_only: true,
-      affiliate_code: 'gjed1x'
+      affiliate_code: 'olkl6p'
     }).then(res => {
       console.log("ORDER SUCCESS")
       console.log(direction, res.id, res.price)
@@ -139,7 +139,7 @@ function main(config) {
         direction: direction == 'long' ? 'SHORT' : "LONG",
         quantity,
         reduce_only: true,
-        affiliate_code: 'gjed1x'
+        affiliate_code: 'olkl6p'
       }).then(res => {
         console.log("cleanPosition")
         console.log(direction, res.id, res.price)
@@ -173,7 +173,7 @@ function main(config) {
         price,
         quantity,
         post_only: true,
-        affiliate_code: 'gjed1x'
+        affiliate_code: 'olkl6p'
       }
       fm.createOrder(reqObj).then(res => {
         console.log("cleanPosition")
@@ -197,7 +197,7 @@ function main(config) {
 
 // main({
 //   // 输入您的key
-//   key: '3839773b172b4a49a65911ef1062cef0', 
+//   key: '3839773b172b4a49a65911ef1062ce1f0', 
 //   // 输入您的secret
 //   secret: 'e0c87237d5c94a1d857119e2b492224a', 
 //   // 单次下单量
