@@ -11,7 +11,7 @@ function fetch(url, config) {
 
 
 function getUrl(url) {
-  return `https://api.fmextest.net${url}`
+  return `https://api.fmex.com${url}`
 }
 
 class FMex {
