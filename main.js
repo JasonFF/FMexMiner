@@ -145,11 +145,32 @@ function main(config) {
         console.log(direction, res.id, res.price)
       })
     } else {
+      let price = 0
+      if (direction == 'long') {
+        let sellPrice = $global.$fm.sellPrice
+        if (entryPrice > sellPrice) {
+          price = (parseInt(entryPrice/1 - 1))
+        } else {
+          price = sellPrice
+        }
+      }
+      if (direction == 'short') {
+        let buyPrice = $global.$fm.buyPrice
+        if (entryPrice < buyPrice) {
+          price = (parseInt(entryPrice/1 + 1))
+        } else {
+          price = buyPrice
+        }
+      }
+      console.log(`direction: ${direction} buyPrice: ${buyPrice} sellPrice: ${sellPrice} entryPrice: ${entryPrice} price: ${price}`)
+      if (!price) {
+        return
+      }
       let reqObj = {
         symbol: "BTCUSD_P",
         type: "LIMIT",
         direction: direction == 'long' ? 'SHORT' : "LONG",
-        price: direction == 'long' ? (parseInt(entryPrice/1 - 1)) : (parseInt(entryPrice/1 + 1)),
+        price,
         quantity,
         post_only: true,
         affiliate_code: 'gjed1x'
