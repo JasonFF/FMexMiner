@@ -9,14 +9,13 @@ function fetch(url, config) {
   })
 }
 
-
-function getUrl(url) {
-  return `https://api.fmex.com${url}`
-}
-
 class FMex {
   constructor(obj) {
     this.config = obj;
+    this.BASEURL = obj.BASEURL || 'https://api.fmex.com'
+  }
+  getUrl(url) {
+    return `${this.BASEURL}${url}`
   }
   getconfig() {
     console.log(this.config);
@@ -54,7 +53,7 @@ class FMex {
     })
   }
   getCurrencies() {
-    return fetch(getUrl('/v2/public/contracts/currencies'), {
+    return fetch(this.getUrl('/v2/public/contracts/currencies'), {
       method: 'GET'
     }).then(res => res.json()).then(res => {
       return res.data
@@ -64,7 +63,7 @@ class FMex {
     })
   }
   getSymbols() {
-    return fetch(getUrl('/v2/public/indexes/symbols'), {
+    return fetch(this.getUrl('/v2/public/indexes/symbols'), {
       method: 'GET'
     }).then(res => res.json()).then(res => {
       return res.data
@@ -74,7 +73,7 @@ class FMex {
     })
   }
   getTicker(symbol) {
-    return fetch(getUrl(`/v2/market/ticker/${symbol}`), {
+    return fetch(this.getUrl(`/v2/market/ticker/${symbol}`), {
       method: 'GET'
     }).then(res => res.json()).then(res => {
       return res.data
@@ -85,7 +84,7 @@ class FMex {
   }
   async getAccount() {
     let time = await this.getTime()
-    let url = getUrl(`/v3/contracts/accounts`)
+    let url = this.getUrl(`/v3/contracts/accounts`)
     let sign = this.secret(`GET${url}${time}`)
     return fetch(url, {
       method: 'GET',
@@ -123,7 +122,7 @@ class FMex {
 
   async createOrder(body) {
     let time = await this.getTime()
-    let url = getUrl(`/v3/contracts/orders`)
+    let url = this.getUrl(`/v3/contracts/orders`)
     let queryStr = this.getQueryString(body)
     let sign = this.secret(`POST${url}${time}${queryStr}`)
     return fetch(url, {
@@ -149,7 +148,7 @@ class FMex {
 
   async getOrders() {
     let time = await this.getTime()
-    let url = getUrl(`/v3/contracts/orders/open`)
+    let url = this.getUrl(`/v3/contracts/orders/open`)
     // let queryStr = this.getQueryString(body)
     let sign = this.secret(`GET${url}${time}`)
     return fetch(url, {
@@ -174,7 +173,7 @@ class FMex {
 
   async cancelOrder(id) {
     let time = await this.getTime()
-    let url = getUrl(`/v3/contracts/orders/${id}/cancel`)
+    let url = this.getUrl(`/v3/contracts/orders/${id}/cancel`)
     // let queryStr = this.getQueryString(body)
     let sign = this.secret(`POST${url}${time}`)
     return fetch(url, {
@@ -199,7 +198,7 @@ class FMex {
 
   async getMatches(id) {
     let time = await this.getTime()
-    let url = getUrl(`/v3/contracts/orders/${id}/matches`)
+    let url = this.getUrl(`/v3/contracts/orders/${id}/matches`)
     // let queryStr = this.getQueryString(body)
     let sign = this.secret(`GET${url}${time}`)
     return fetch(url, {
@@ -224,7 +223,7 @@ class FMex {
 
   async getPosition() {
     let time = await this.getTime()
-    let url = getUrl(`/v3/broker/auth/contracts/positions`)
+    let url = this.getUrl(`/v3/broker/auth/contracts/positions`)
     // let queryStr = this.getQueryString(body)
     let sign = this.secret(`GET${url}${time}`)
     return fetch(url, {
@@ -249,7 +248,7 @@ class FMex {
 
   async getOrderDetail(id) {
     let time = await this.getTime()
-    let url = getUrl(`/v3/contracts/orders/${id}`)
+    let url = this.getUrl(`/v3/contracts/orders/${id}`)
     // let queryStr = this.getQueryString(body)
     let sign = this.secret(`GET${url}${time}`)
     return fetch(url, {
@@ -273,7 +272,7 @@ class FMex {
   }
 
   async getCandle(symbol, resolution, limit = 20) {
-    let url = getUrl(`/v2/market/candles/${resolution}/${symbol}?limit=${limit}`)
+    let url = this.getUrl(`/v2/market/candles/${resolution}/${symbol}?limit=${limit}`)
     return fetch(url, {
       method: 'GET',
     }).then(res => res.json()).then(res => {
@@ -290,7 +289,7 @@ class FMex {
 
   async cancelAllOrders(symbol = 'btcusd_p') {
     let time = await this.getTime()
-    let url = getUrl(`/v3/contracts/orders/cancel?symbol=${symbol}`)
+    let url = this.getUrl(`/v3/contracts/orders/cancel?symbol=${symbol}`)
     // let queryStr = this.getQueryString(body)
     let sign = this.secret(`POST${url}${time}`)
     return fetch(url, {
